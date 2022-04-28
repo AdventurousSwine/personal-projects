@@ -1,5 +1,6 @@
 from cryptography.fernet import Fernet
 import json
+#this is so freaking dumb, github is dumb, im dumb
 
 filename = "passwords.txt"
 passdict = {}
