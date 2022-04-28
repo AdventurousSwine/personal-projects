@@ -1,4 +1,8 @@
 from cryptography.fernet import Fernet
+import json
+
+filename = "passwords.txt"
+passdict = {}
 
 
 masterpwd = input("What is the master password? ")
@@ -17,6 +21,14 @@ def add():
 
     with open("passwords.txt", "a") as f:
         f.write(usern + "|" + email + "|" + pwd + "\n")
+
+    with open("passwords.txt") as fh:
+        for line in fh:
+            command, description = line.strip().split(None, 1)
+            passdict[command] = description.strip()
+    out_file = open("passwords.json", "a")
+    json.dump(passdict, out_file, indent=4, sort_keys=False)
+    out_file.close()
 
 while True:
     mode = input("Would you like to add a new password or view existing ones? (add, view, quit)")
