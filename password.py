@@ -1,15 +1,30 @@
 from cryptography.fernet import Fernet
 import json
-#this is so freaking dumb, github is dumb, im dumb
+import random
+import string
+
 
 filename = "passwords.txt"
 passdict = {}
 
+masterpwd = input("What is the master password? ")
 
-def write_key():
+length = random in range(8, 18)
+
+num = string.digits
+letters = string.ascii_letters
+gen = random.sample(num + letters, length)
+
+def generate():
+    gen
+    print(gen)
+
+#def write_key():
     key = Fernet.generate_key()
     with open("key.key", "wb") as key_file:
         key_file.write(key)
+
+#write_key()
 
 def load_key():
     file = open("key.key", "rb")
@@ -17,17 +32,15 @@ def load_key():
     file.close()
     return key
 
-masterpwd = input("What is the master password? ")
 key = load_key() + masterpwd.encode()
 fer = Fernet(key)
-
 
 def view():
     with open("passwords.txt", "r") as f:
         for line in f.readlines():
             data = (line.rstrip())
             usrn, pwd, email = data.split("|")
-            print("Username: ", usern, "Email: ", email, "Password: ", str(fer.decrypt(pwd.encode)))
+            print("Username: ", usern, "Email: ", email, "Password: ", fer.decrypt(pwd.encode()))
 
 def add():
     usern = input("Username:")
@@ -35,7 +48,7 @@ def add():
     pwd = input("Password: ")
 
     with open("passwords.txt", "a") as f:
-        f.write(usern + "|" + email + "|" + str(fer.encrypt(pwd.encode)) + "\n")
+        f.write(usern + "|" + email + "|" + fer.encrypt(pwd.encode()).decode() + "\n")
 
     with open("passwords.txt") as fh:
         for line in fh:
@@ -52,10 +65,10 @@ while True:
         break
 
     if mode == "view":
-        pass
+        view()
 
     elif mode == "add":
-        pass
+        add()
 
     else:
         print("Invalid input.")
