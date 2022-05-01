@@ -1,19 +1,20 @@
 from cryptography.fernet import Fernet
 import json
-import random
+import secrets
 import string
+import random
 
 
 filename = "passwords.txt"
 passdict = {}
-
+random.seed(secrets.token_bytes())
 masterpwd = input("What is the master password? ")
 
-length = random in range(8, 18)
+length = secrets in range(8, 18)
 
 num = string.digits
 letters = string.ascii_letters
-gen = random.sample(num + letters, length)
+gen = secrets.sample(num + letters, length)
 
 def generate():
     gen
