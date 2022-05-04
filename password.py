@@ -10,20 +10,19 @@ passdict = {}
 random.seed(secrets.token_bytes())
 masterpwd = input("What is the master password? ")
 
-length = secrets in range(8, 18)
+alphabet = string.ascii_letters + string.digits
+password = ''.join(secrets.choice(alphabet) for i in range(8, 18))
 
-num = string.digits
-letters = string.ascii_letters
-gen = secrets.sample(num + letters, length)
+work = random.randint(4, 8)
 
-def generate():
-    gen
-    print(gen)
+def gen():
+    scret = str(secrets.token_hex(work))
+    print(f"{scret} has {len(scret)}")
 
 #def write_key():
-    key = Fernet.generate_key()
-    with open("key.key", "wb") as key_file:
-        key_file.write(key)
+    #key = Fernet.generate_key()
+    #with open("key.key", "wb") as key_file:
+        #key_file.write(key)
 
 #write_key()
 
@@ -44,12 +43,14 @@ def view():
             print("Username: ", usern, "Email: ", email, "Password: ", fer.decrypt(pwd.encode()))
 
 def add():
+    confirm_input = input("Would you like to generate a password? y/n")
+    if confirm_input == "y":
+        gen()
     usern = input("Username:")
     email = input("Email: ")
-    pwd = input("Password: ")
 
     with open("passwords.txt", "a") as f:
-        f.write(usern + "|" + email + "|" + fer.encrypt(pwd.encode()).decode() + "\n")
+        f.write(usern + "|" + email + "|" + fer.encrypt(gen()) + "\n")
 
     with open("passwords.txt") as fh:
         for line in fh:
@@ -60,7 +61,7 @@ def add():
     out_file.close()
 
 while True:
-    mode = input("Would you like to add a new password or view existing ones? (add, view, quit)")
+    mode = input("Would you like to add a new account or view existing ones? (add, view, quit)")
 
     if mode == "quit":
         break
