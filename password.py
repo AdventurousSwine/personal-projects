@@ -50,7 +50,7 @@ def add():
     email = input("Email: ")
 
     with open("passwords.txt", "a") as f:
-        f.write(usern + "|" + email + "|" + fer.encrypt(gen()) + "\n")
+        f.write(usern + "|" + email + "|" + str(fer.encrypt(gen())) + "\n")
 
     with open("passwords.txt") as fh:
         for line in fh:
