@@ -46,8 +46,12 @@ def add():
     confirm_input = input("Would you like to generate a password? y/n")
     if confirm_input == "y":
         gen()
-    usern = input("Username:")
-    email = input("Email: ")
+        usern = input("Username: ")
+        email = input("Email: ")
+    else:
+        usern = input("Username: ")
+        email = input("Email: ")
+        pwd = input("Password: ")
 
     with open("passwords.txt", "a") as f:
         f.write(usern + "|" + email + "|" + str(fer.encrypt(gen())) + "\n")
