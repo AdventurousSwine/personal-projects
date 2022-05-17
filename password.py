@@ -8,7 +8,22 @@ import random
 filename = "passwords.txt"
 passdict = {}
 random.seed(secrets.token_bytes())
-masterpwd = input("What is the master password? ")
+
+
+input("Would you like to create a new master password? y/n")
+if input == "y":
+    mstr = input("Please create your password: ")
+    stored = mstr
+        return
+    else:
+        masterpwd = input("What is the master password? ")
+        if stored != masterpwd:
+            print("The password is incorrect. Please try again. ")
+        else:
+            return
+
+
+
 
 alphabet = string.ascii_letters + string.digits
 password = ''.join(secrets.choice(alphabet) for i in range(8, 18))
@@ -17,7 +32,7 @@ work = random.randint(4, 8)
 
 def gen():
     scret = str(secrets.token_hex(work))
-    print(f"{scret} has {len(scret)}")
+    print(f"{scret} has {len(scret)} characters.")
 
 #def write_key():
     #key = Fernet.generate_key()
