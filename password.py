@@ -4,11 +4,29 @@ import secrets
 import string
 import random
 
-
 filename = "passwords.txt"
 passdict = {}
 random.seed(secrets.token_bytes())
-masterpwd = input("What is the master password? ")
+
+def startup():
+    input("Would you like to create a new master password? y/n")
+    if input == "y":
+        mstr = input("Please create your password: ")
+        stored = mstr
+    return mode
+    else:
+    return existing
+
+def existing():
+    input("What is the master password? ")
+    if mstr != stored:
+        print("The password is incorrect. Please try again. ")
+        return existing
+    else:
+        return mode
+
+
+
 
 alphabet = string.ascii_letters + string.digits
 password = ''.join(secrets.choice(alphabet) for i in range(8, 18))
@@ -17,14 +35,13 @@ work = random.randint(4, 8)
 
 def gen():
     scret = str(secrets.token_hex(work))
-    print(f"{scret} has {len(scret)}")
+    print(f"{scret} has {len(scret)} characters.")
 
-#def write_key():
-    #key = Fernet.generate_key()
-    #with open("key.key", "wb") as key_file:
-        #key_file.write(key)
-
-#write_key()
+def write_key():
+    key = Fernet.generate_key()
+    with open("key.key", "wb") as key_file:
+        key_file.write(key)
+    write_key()
 
 def load_key():
     file = open("key.key", "rb")
@@ -73,7 +90,7 @@ while True:
     if mode == "view":
         view()
 
-    elif mode == "add":
+    if mode == "add":
         add()
 
     else:
