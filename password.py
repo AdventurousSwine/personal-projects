@@ -11,19 +11,16 @@ random.seed(secrets.token_bytes())
 def startup():
     input("Would you like to create a new master password? y/n")
     if input == "y":
+        global mstr
         mstr = input("Please create your password: ")
-        stored = mstr
-    return mode
+        return mode()
     else:
-    return existing
-
-def existing():
-    input("What is the master password? ")
-    if mstr != stored:
-        print("The password is incorrect. Please try again. ")
-    return existing
-    else:
-    return mode
+        input("What is the master password? ")
+        if input != mstr:
+            print("The password is incorrect. Please try again. ")
+            return
+        else:
+            return mode()
 
 
 
@@ -47,8 +44,8 @@ def load_key():
     file.close()
     return key
 
-key = load_key() + masterpwd.encode()
-fer = Fernet(key)
+#key = load_key() + mstr.encode()
+#fer = Fernet(key)
 
 def view():
     with open("passwords.txt", "r") as f:
