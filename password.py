@@ -21,16 +21,14 @@ def existing():
     input("What is the master password? ")
     if mstr != stored:
         print("The password is incorrect. Please try again. ")
-        return existing
+    return existing
     else:
-        return mode
-
+    return mode
 
 
 
 alphabet = string.ascii_letters + string.digits
 password = ''.join(secrets.choice(alphabet) for i in range(8, 18))
-
 work = random.randint(4, 8)
 
 def gen():
@@ -81,11 +79,11 @@ def add():
     json.dump(passdict, out_file, indent=4, sort_keys=False)
     out_file.close()
 
-while True:
-    mode = input("Would you like to add a new account or view existing ones? (add, view, quit)")
+def mode():
+    input("Would you like to add a new account or view existing ones? (add, view, quit)")
 
     if mode == "quit":
-        break
+        quit()
 
     if mode == "view":
         view()
@@ -95,4 +93,4 @@ while True:
 
     else:
         print("Invalid input.")
-        continue
+        mode()
