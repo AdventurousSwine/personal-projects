@@ -3,6 +3,7 @@ import json
 import secrets
 import string
 import random
+import pickle
 
 filename = "passwords.txt"
 passdict = {}
