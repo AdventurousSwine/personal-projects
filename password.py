@@ -1,121 +1,214 @@
 from cryptography.fernet import Fernet
 import json
-import secrets
-import string
+import base64
+import hashlib
+import getpass
 import random
+import string
 
-filename = "passwords.txt"
-passdict = {}
-random.seed(secrets.token_bytes())
+# File paths
+filename_json = "passwords.json"
+filename_master_password = "master_password.txt"
 
+# Function to generate the key using the master password
+def generate_key(master_password):
+    # Derive the key using PBKDF2 with a high iteration count
+    key = hashlib.pbkdf2_hmac('sha256', master_password.encode(), b'salt', 100000)
+    return key
 
-class Master:
-
-    def __init__(self, mp: str):
-        self.mstr = mp
-        self.alphabet = string.ascii_letters + string.digits
-        self.password = ''.join(secrets.choice(self.alphabet) for i in range(8, 18))
-        self.work = random.randint(4, 8)
-
-
-    def initial(self):
-
-        key = Fernet.generate_key()
-
-        with open("mp.key", 'wb') as mp:
-            mp.write(key)
-
-        with open('key.key', 'rb') as mp:
-            key = mp.read()
-        print(key)
-        mp = input("Please create your new master password: ")
-        return self.mode()
+# Function to generate a random password with a variable length
+def generate_password(min_length=8, max_length=16, chars=string.ascii_letters + string.digits + string.punctuation):
+    length = random.randint(min_length, max_length)
+    return ''.join(random.choice(chars) for _ in range(length))
 
 
-    def subsequent(self):
+# Function to encrypt data
+def encrypt_data(data, key):
+    # Encode the key using base64 before passing it to Fernet
+    cipher_suite = Fernet(base64.urlsafe_b64encode(key))
+    encrypted_data = cipher_suite.encrypt(data.encode())
+    return encrypted_data
 
-        input("Would you like to update your master password? y/n")
-        if input == "y":
-            input("Create your new password:")
+# Function to decrypt data
+def decrypt_data(encrypted_data, key):
+    # Encode the key using base64 before passing it to Fernet
+    cipher_suite = Fernet(base64.urlsafe_b64encode(key))
+    decrypted_data = cipher_suite.decrypt(encrypted_data).decode()
+    return decrypted_data
+
+# Function to save the hashed master password to a file
+def save_master_password(master_password):
+    hashed_password = hashlib.sha256(master_password.encode()).hexdigest()
+    with open(filename_master_password, "w") as f:
+        f.write(hashed_password)
+
+# Function to load the hashed master password from a file
+def load_master_password():
+    try:
+        with open(filename_master_password, "r") as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        return None
+
+# Function to check if master password is set and if it's correct
+def check_master_password():
+    while True:
+        master_password = getpass.getpass("Enter your master password: ")
+        hashed_master_password = load_master_password()
+        if hashed_master_password:
+            if hashlib.sha256(master_password.encode()).hexdigest() == hashed_master_password:
+                return True
+            else:
+                print("Incorrect master password. Please try again.")
         else:
-            return self.old()
+            print("No master password set.")
+            return False
 
+# Function to view passwords
+def view(key):
+    try:
+        with open(filename_json, "r") as f:
+            passwords = json.load(f)
+            for website, details in passwords.items():
+                print("Website:", website)
+                
+                # Decode the base64-encoded email and password
+                encoded_username = details["username"]
+                encoded_email = details["email"]
+                encoded_password = details["password"]
+                
+                
+                # Decrypt the email and password
+                decrypted_username = decrypt_data(base64.urlsafe_b64decode(encoded_username), key)
+                decrypted_email = decrypt_data(base64.urlsafe_b64decode(encoded_email), key)
+                decrypted_password = decrypt_data(base64.urlsafe_b64decode(encoded_password), key)
+               
+                
+                print("Username:", decrypted_username)
+                print("Email:", decrypted_email)
+                print("Password:", decrypted_password)
+                print()
+    except FileNotFoundError:
+        print("No passwords stored yet.")
 
-    def old(self):
-
-        input("What is the master password? ")
-        if input != Master:
-            print("The password is incorrect. Please try again. ")
-            return
+# Function to add a new password
+def add(key):
+    while True:
+        # Ask for website
+        website = input("Website: ")
+        if website.strip():  # Check if website is not empty or whitespace
+            break
         else:
-            return self.mode()
+            print("Error: Website cannot be empty. Please try again.")
 
+    # Ask for username
+    while True:
+        username_required = input("Do you want to provide a username? (yes/no): ").lower()
+        if username_required in ('yes', 'no', 'y', 'n'):
+            break
+        else:
+            print("Error: Please enter 'yes' or 'no'.")
 
-    def gen(self):
-        scret = str(secrets.token_hex(self.work))
-        print(f"{scret} has {len(scret)} characters.")
+    if username_required in ('yes', 'y'):
+        while True:
+            username = input("Username: ")
+            if username.strip():  # Check if username is not empty or whitespace
+                break
+            else:
+                print("Error: Username cannot be empty. Please try again.")
+    else:
+        username = ""
 
+    # Ask for email
+    while True:
+        email_required = input("Do you want to provide an email? (yes/no): ").lower()
+        if email_required in ('yes', 'no', 'y', 'n'):
+            break
+        else:
+            print("Error: Please enter 'yes' or 'no'.")
 
-    def write_key(self):
-        key = Fernet.generate_key()
-        with open("key.key", "wb") as key_file:
-            key_file.write(key)
-        self.write_key()
-
-
-    def load_key(self):
-        file = open("key.key", "rb")
-        key = file.read()
-        file.close()
-        return key
-
-
-    '''key = load_key() + mstr.encode()
-    fer = Fernet(key)'''
-
-
-    def view(self):
-
-        with open("passwords.txt", "r") as f:
-            for line in f.readlines():
-                data = (line.rstrip())
-                usrn, pwd, email = data.split("|")
-                print("Username: ", usrn, "Email: ", email, "Password: ", fer.decrypt(pwd.encode()))
-
-
-    def add(self):
-
-        confirm_input = input("Would you like to generate a password? y/n")
-        if confirm_input == "y":
-            self.gen()
-            usern = input("Username: ")
+    if email_required in ('yes', 'y'):
+        while True:
             email = input("Email: ")
+            if email.strip():  # Check if email is not empty or whitespace
+                break
+            else:
+                print("Error: Email cannot be empty. Please try again.")
+    else:
+        email = ""
+        
+    # Ask for password
+    while True:
+        password_choice = input("Do you want to generate a password? (yes/no): ").lower()
+        if password_choice == ('yes'):
+            password = generate_password()
+            print("Password has been generated.")
         else:
-            usern = input("Username: ")
-            email = input("Email: ")
-            pwd = input("Password: ")
+            password = getpass.getpass("Password: ")
+        if not password:
+            print("Error: Password cannot be empty. Please try again.")
+            continue
+        else:
+            break
 
-        with open("passwords.txt", "a") as f:
-            f.write(usern + "|" + email + "|" + str(fer.encrypt(self.gen())) + "\n")
+    # Encrypt the email and password
+    encrypted_email = encrypt_data(email, key)
+    encrypted_password = encrypt_data(password, key)
+    encrypted_username = encrypt_data(username, key)
 
-        with open("passwords.txt") as fh:
-            for line in fh:
-                command, description = line.strip().split(None, 1)
-                passdict[command] = description.strip()
-        out_file = open("passwords.json", "a")
-        json.dump(passdict, out_file, indent=4, sort_keys=False)
-        out_file.close()
+    # Convert the encrypted email and password to base64-encoded strings
+    encoded_email = base64.urlsafe_b64encode(encrypted_email).decode()
+    encoded_password = base64.urlsafe_b64encode(encrypted_password).decode()
+    encoded_username = base64.urlsafe_b64encode(encrypted_username).decode()
 
+    try:
+        # Try to open the existing passwords.json file
+        with open(filename_json, "r") as f:
+            passwords = json.load(f)
+    except FileNotFoundError:
+        # If the file doesn't exist, create a new dictionary for passwords
+        passwords = {}
 
-    def mode(self):
+    # Add the new username, email, and password to the dictionary
+    passwords[website] = {"username": encoded_username, "email": encoded_email, "password": encoded_password}
 
-        input("Would you like to add a new account or view existing ones? (add, view, quit)")
-        if self.mode == "quit":
-            quit()
-        if self.mode == "view":
-            self.view()
-        if self.mode == "add":
-            self.add()
+    # Write the updated dictionary to the passwords.json file
+    with open(filename_json, "w") as f:
+        json.dump(passwords, f, indent=4)
+
+    print("Password added successfully.")
+
+# Main function
+def main():
+    # Check if master password is already set
+    master_password = load_master_password()
+    if not master_password:
+        # If not set, prompt user to set a new master password
+        master_password = getpass.getpass("Set your master password: ")
+        save_master_password(master_password)
+
+    # Generate the key using the master password
+    key = generate_key(master_password)
+
+    # Check if the entered master password is correct
+    if not check_master_password():
+        print("Incorrect master password. Exiting.")
+        return
+
+    while True:
+        mode = input("Would you like to add a new password, view existing ones, or quit? (add/view/quit): ").lower()
+
+        if mode == "quit":
+            break
+
+        elif mode == "view":
+            view(key)
+
+        elif mode == "add":
+            add(key)
+
         else:
             print("Invalid input.")
-            self.mode()
+
+if __name__ == "__main__":
+    main()
